@@ -1,0 +1,19 @@
+{
+	"name": "@ghasemkiani/web-app",
+	"version": "1.0.0",
+	"description": "",
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"test": "node --test"
+	},
+	"keywords": [],
+	"author": "Ghasem Kiani",
+	"license": "MIT",
+	"dependencies": {
+		"@ghasemkiani/base": "github:ghasemkiani/base",
+		"@ghasemkiani/base-app": "github:ghasemkiani/base-app",
+		"@ghasemkiani/base-utils": "github:ghasemkiani/base-utils",
+		"@ghasemkiani/wdom": "github:ghasemkiani/wdom"
+	}
+}
