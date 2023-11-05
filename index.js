@@ -1,2 +1,2 @@
-export {App as Server} from "./server/app.js";
-export {App as Client} from "./client/app.js";
+export * as server from "./server/app.js";
+export * as client from "./client/app.js";

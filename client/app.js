@@ -45,8 +45,9 @@ class App extends cutil.mixin(Obj, pubsub) {
 	}
 	uriToMethodAndParams(uri) {
 		let app = this;
-		let [match, path, searchParams] = /^\/([^?]*)(\?.*)?$/.exec(uri);
-		let method = xutil.toCamelCase("to-go-" + path.replace(/\//g, "-"));
+		let [match, path, searchParams, hash] = /^\/([^?]*)(\?.*)?(\#.*)?$/.exec(uri);
+		
+		let method = xutil.toCamelCase("to-go-" + (path.split("/").filter(a => !!a).join("-") || "home"));
 		let params;
 		try {
 			if (searchParams) {
@@ -57,9 +58,9 @@ class App extends cutil.mixin(Obj, pubsub) {
 		}
 		return {method, params};
 	}
-	methodAndParamsToUri(method, params) {
+	methodAndParamsToUri(method, params, hash = null) {
 		let app = this;
-		let uri = `/${xutil.toDashed(method).replace(/-/g, "/")}`;
+		let uri = "/" + xutil.toDashed(method).replace(/-/g, "/").replace(/^to\/go\//, "").replace(/^home$/, "");
 		if (cutil.a(params)) {
 			uri += `?`;
 			let usp = new URLSearchParams(cutil.asObject(params));
@@ -67,22 +68,23 @@ class App extends cutil.mixin(Obj, pubsub) {
 				uri += `${usp.toString()}`;
 			}
 		}
+		if (!cutil.isNil(hash)) {
+			uri += hash.startsWith("#") ? hash : "#" + hash;
+		}
 		return uri;
 	}
-	
-	async toNav(method, params) {
-		let app = this;
-		let uri = app.methodAndParamsToUri(method, params);
-		await app.toNavTo(uri);
-	}
-	async toNavTo(uri) {
+	async toNav(uri) {
 		let app = this;
 		await app.toGo(uri);
-		app.wdocument.window.history.pushState({uri}, "", `#${uri}`);
+		app.wdocument.window.history.pushState({uri}, "", uri);
 	}
 	async toGo(uri) {
 		let app = this;
 		let {method, params} = app.uriToMethodAndParams(uri);
+		await app.toDoGo(method, params);
+	}
+	async toDoGo(method, params) {
+		let app = this;
 		await app[method](...(params ? [params] : []));
 	}
 	async toCreate() {
@@ -99,10 +101,7 @@ class App extends cutil.mixin(Obj, pubsub) {
 			await app.toCreate();
 		});
 		window.addEventListener("popstate", async (event) => {
-			if (cutil.na(window.location.hash)) {
-				window.location.hash = "#/home";
-			}
-			await app.toGo(window.location.hash);
+			await app.toGo(window.location.pathname);
 		});
 	}
 	async toStart() {

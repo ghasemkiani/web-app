@@ -1,6 +1,6 @@
 {
 	"name": "@ghasemkiani/web-app",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "",
 	"type": "module",
 	"main": "index.js",
@@ -14,6 +14,13 @@
 		"@ghasemkiani/base": "github:ghasemkiani/base",
 		"@ghasemkiani/base-app": "github:ghasemkiani/base-app",
 		"@ghasemkiani/base-utils": "github:ghasemkiani/base-utils",
-		"@ghasemkiani/wdom": "github:ghasemkiani/wdom"
+		"@ghasemkiani/wdom": "github:ghasemkiani/wdom",
+		"cookie-parser": "^1.4.6",
+		"debug": "^4.3.4",
+		"express": "^4.18.2",
+		"express-async-handler": "^1.2.0",
+		"http-errors": "^2.0.0",
+		"morgan": "^1.10.0",
+		"serve-index": "^1.9.1"
 	}
 }
