@@ -1,10 +1,12 @@
-import url from "node:url";
 import path from "node:path";
-import {parseArgs} from "node:util";
+import fs from "node:fs";
+import url from "node:url";
 import http from "node:http";
 import https from "node:https";
-import fs from "node:fs";
 
+import {build} from "esbuild";
+import {polyfillNode} from "esbuild-plugin-polyfill-node";
+import JavaScriptObfuscator from "javascript-obfuscator";
 import debug from "debug";
 import Express from "express";
 import serveIndex from "serve-index";
@@ -13,6 +15,7 @@ import cookieParser from "cookie-parser";
 import logger from "morgan";
 
 import {cutil} from "@ghasemkiani/base";
+import {Textual} from "@ghasemkiani/base";
 import {App as AppBase} from "@ghasemkiani/base-app";
 import {xutil} from "@ghasemkiani/wdom";
 
@@ -40,6 +43,8 @@ class App extends AppBase {
 			_api: null,
 			httpServer: null,
 			httpsServer: null,
+			uriClientScript: "/scripts/client.js",
+			uriClientRun: "./client/run.js",
 			urlBase: null,
 		});
 	}
@@ -107,6 +112,30 @@ class App extends AppBase {
 	set api(api) {
 		this._api = api;
 	}
+	async toBuild({obfuscate = false}) {
+		let app = this;
+		let {urlBase} = app;
+		let {uriClientRun} = app;
+		let {uriClientScript} = app;
+
+		let dirname = path.dirname(url.fileURLToPath(urlBase));
+		let fnClientRun = path.join(dirname, uriClientRun);
+		let fnClientScript = path.join(dirname, "public", uriClientScript);
+		build({
+			entryPoints: [fnClientRun],
+			bundle: true,
+			outfile: fnClientScript,
+			plugins: [
+				polyfillNode({}),
+			],
+		});
+		if (obfuscate) {
+			let textual = new Textual({fn: fnClientScript});
+			textual.read();
+			textual.string = JavaScriptObfuscator.obfuscate(textual.string);
+			textual.write();
+		}
+	}
 	async toSetup() {
 		let app = this;
 		let {express} = app;
@@ -122,7 +151,7 @@ class App extends AppBase {
 
 		express.get("/", (req, res, next) => {
 			res.set("Content-Type", "text/html");
-			res.send(Buffer.from(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><script type="text/javascript" src="/scripts/client.js"></script></head><body></body></html>`));
+			res.send(Buffer.from(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><script type="text/javascript" src="${app.uriClientScript}"></script></head><body></body></html>`));
 		});
 		router.get("/api/:method", asyncHandler(async(req, rsp) => {
 				let {method} = req.params;
@@ -186,9 +215,7 @@ class App extends AppBase {
 				if (error.syscall !== "listen") {
 					throw error;
 				}
-
 				let bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
-
 				switch (error.code) {
 				case "EACCES":
 					console.error(bind + " requires elevated privileges");
@@ -202,17 +229,79 @@ class App extends AppBase {
 					throw error;
 				}
 			});
-			
 			server.on("listening", () => {
 				let addr = server.address();
 				let bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
 				debug("Listening on " + bind);
 			});
-			
 			server.listen(port);
 		};
 	}
-	async toRun() {
+	async toDefineInitOptions() {
+		await super.toDefineInitOptions();
+		let app = this;
+		app.commander.option("-p, --port <port>", "Set the port");
+		app.commander.option("--set-port <port>", "Set the port persistently");
+		app.commander.option("-s, --secure", "Use HTTPS protocol");
+		app.commander.option("--set-secure", "Use HTTPS protocol persistently");
+		app.commander.option("-c, --cert <cert>", "Set cert file");
+		app.commander.option("--set-cert <cert>", "Set cert file persistently");
+		app.commander.option("-k, --key <key>", "Set key file");
+		app.commander.option("--set-key <key>", "Set key file persistently");
+		app.commander.option("-n, --nosec <nosec>", "Set nosec port");
+		app.commander.option("--set-nosec <nosec>", "Set nosec port persistently");
+		app.commander.command("build")
+			.description("Build the client script")
+			.option("-o, --obfuscate", "Obfuscate the client script")
+			.action(async ({obfuscate}) => {
+				app.sub("run", async () => {
+					await app.toBuild({obfuscate});
+				})
+			});
+		app.commander.command("operate")
+			.description("Start the server")
+			.action(async () => {
+				app.sub("run", async () => {
+					await app.toOperate();
+				})
+			});
+	}
+	async toApplyInitOptions() {
+		await super.toApplyInitOptions();
+		let app = this;
+		let {port, setPort, secure, setSecure, cert, setCert, key, setKey, nosec, setNosec} = app.commander.opts();
+		if (cutil.a(port)) {
+			app.port = port;
+		}
+		if (cutil.a(setPort)) {
+			app.prefs.port = setPort;
+		}
+        if (cutil.a(secure)) {
+            app.secure = secure;
+        }
+        if (cutil.a(setSecure)) {
+            app.prefs.secure = setSecure;
+        }
+        if (cutil.a(cert)) {
+            app.cert = cert;
+        }
+        if (cutil.a(setCert)) {
+            app.prefs.cert = setCert;
+        }
+        if (cutil.a(key)) {
+            app.key = key;
+        }
+        if (cutil.a(setKey)) {
+            app.prefs.key = setKey;
+        }
+        if (cutil.a(nosec)) {
+            app.nosec = nosec;
+        }
+        if (cutil.a(setNosec)) {
+            app.prefs.nosec = setNosec;
+        }
+	}
+	async toOperate() {
 		let app = this;
 		await app.toSetup();
 		await app.toListen();
