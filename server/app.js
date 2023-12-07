@@ -9,6 +9,7 @@ import {polyfillNode} from "esbuild-plugin-polyfill-node";
 import JavaScriptObfuscator from "javascript-obfuscator";
 import debug from "debug";
 import Express from "express";
+import asyncHandler from "express-async-handler";
 import serveIndex from "serve-index";
 import createError from "http-errors";
 import cookieParser from "cookie-parser";
@@ -115,14 +116,14 @@ class App extends AppBase {
 	get api() {
 		if (cutil.na(this._api)) {
 			let {Api} = this;
-			this._api = new Api({app});
+			this._api = new Api({app: this});
 		}
 		return this._api;
 	}
 	set api(api) {
 		this._api = api;
 	}
-	async toBuild({obfuscate = false}) {
+	async toBuild({obfuscate = false, verbose = false}) {
 		let app = this;
 		let {dirBase} = app;
 		let {uriClientRun} = app;
@@ -130,7 +131,10 @@ class App extends AppBase {
 
 		let fnClientRun = path.join(dirBase, uriClientRun);
 		let fnClientScript = path.join(dirBase, "public", uriClientScript);
-		build({
+		if (verbose) {
+			console.log("Building...");
+		}
+		await build({
 			entryPoints: [fnClientRun],
 			bundle: true,
 			outfile: fnClientScript,
@@ -139,6 +143,9 @@ class App extends AppBase {
 			],
 		});
 		if (obfuscate) {
+			if (verbose) {
+				console.log("Obfuscating...");
+			}
 			let textual = new Textual({fn: fnClientScript});
 			textual.read();
 			let result = JavaScriptObfuscator.obfuscate(textual.string, {
@@ -165,7 +172,7 @@ class App extends AppBase {
 			res.set("Content-Type", "text/html");
 			res.send(Buffer.from(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><script type="text/javascript" src="${app.uriClientScript}"></script></head><body></body></html>`));
 		});
-		router.get("/api/:method", asyncHandler(async(req, rsp) => {
+		express.get("/api/:method", asyncHandler(async(req, rsp) => {
 				let {method} = req.params;
 				method = cutil.toCamelCase("to-do-" + method);
 				let arg = {...req.query};
@@ -213,15 +220,6 @@ class App extends AppBase {
 		
 		express.set("port", port);
 
-		if (!secure) {
-			start(app.httpServer = http.createServer(express), port);
-		} else {
-			start(app.httpsServer = https.createServer({key, cert}, express), port);
-			if (cutil.a(nosec)) {
-				start(app.httpServer = http.createServer(express), nosec);
-			}
-		}
-
 		const start = (server, port) => {
 			server.on("error", (error) => {
 				if (error.syscall !== "listen") {
@@ -248,6 +246,15 @@ class App extends AppBase {
 			});
 			server.listen(port);
 		};
+		
+		if (!secure) {
+			start(app.httpServer = http.createServer(express), port);
+		} else {
+			start(app.httpsServer = https.createServer({key, cert}, express), port);
+			if (cutil.a(nosec)) {
+				start(app.httpServer = http.createServer(express), nosec);
+			}
+		}
 	}
 	async toDefineInitOptions() {
 		await super.toDefineInitOptions();
@@ -265,9 +272,10 @@ class App extends AppBase {
 		app.commander.command("build")
 			.description("Build the client script")
 			.option("-o, --obfuscate", "Obfuscate the client script")
-			.action(async ({obfuscate}) => {
+			.option("-v, --verbose", "Show verbose info")
+			.action(async ({obfuscate, verbose}) => {
 				app.sub("run", async () => {
-					await app.toBuild({obfuscate});
+					await app.toBuild({obfuscate, verbose});
 				})
 			});
 		app.commander.command("operate")
