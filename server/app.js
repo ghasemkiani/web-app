@@ -46,7 +46,17 @@ class App extends AppBase {
 			uriClientScript: "/scripts/client.js",
 			uriClientRun: "./client/run.js",
 			urlBase: null,
+			_dirBase: null,
 		});
+	}
+	get dirBase() {
+		if (cutil.na(this._dirBase)) {
+			this._dirBase = path.dirname(url.fileURLToPath(this.urlBase));
+		}
+		return this._dirBase;
+	}
+	set dirBase(dirBase) {
+		this._dirBase = dirBase;
 	}
 	get port() {
 		if (cutil.na(this._port)) {
@@ -114,13 +124,12 @@ class App extends AppBase {
 	}
 	async toBuild({obfuscate = false}) {
 		let app = this;
-		let {urlBase} = app;
+		let {dirBase} = app;
 		let {uriClientRun} = app;
 		let {uriClientScript} = app;
 
-		let dirname = path.dirname(url.fileURLToPath(urlBase));
-		let fnClientRun = path.join(dirname, uriClientRun);
-		let fnClientScript = path.join(dirname, "public", uriClientScript);
+		let fnClientRun = path.join(dirBase, uriClientRun);
+		let fnClientScript = path.join(dirBase, "public", uriClientScript);
 		build({
 			entryPoints: [fnClientRun],
 			bundle: true,
@@ -132,14 +141,17 @@ class App extends AppBase {
 		if (obfuscate) {
 			let textual = new Textual({fn: fnClientScript});
 			textual.read();
-			textual.string = JavaScriptObfuscator.obfuscate(textual.string);
+			let result = JavaScriptObfuscator.obfuscate(textual.string, {
+				compact: true,
+			});
+			textual.string = result.getObfuscatedCode();
 			textual.write();
 		}
 	}
 	async toSetup() {
 		let app = this;
 		let {express} = app;
-		let {urlBase} = app;
+		let {dirBase} = app;
 		let {api} = app;
 		await api.toInit();
 		express.set("api", api);
@@ -169,7 +181,7 @@ class App extends AppBase {
 				rsp.send(res);
 			}));
 		
-		let pubpath = path.join(path.dirname(url.fileURLToPath(urlBase)), "public");
+		let pubpath = path.join(dirBase, "public");
 		express.use(Express.static(pubpath));
 		express.use(serveIndex(pubpath));
 
