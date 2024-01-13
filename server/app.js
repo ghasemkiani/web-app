@@ -35,6 +35,8 @@ class App extends AppBase {
 				key: null,
 			},
 			defaultPort: 3000,
+			useStatic: true,
+			useStaticIndex: true,
 			_port: null,
 			_secure: null,
 			_cert: null,
@@ -155,6 +157,9 @@ class App extends AppBase {
 			textual.write();
 		}
 	}
+	async toSetupRoutes() {
+		
+	}
 	async toSetup() {
 		let app = this;
 		let {express} = app;
@@ -189,9 +194,15 @@ class App extends AppBase {
 				rsp.send(res);
 			}));
 		
-		let pubpath = path.join(dirBase, "public");
-		express.use(Express.static(pubpath));
-		express.use(serveIndex(pubpath));
+		if (app.useStatic) {
+			let pubpath = path.join(dirBase, "public");
+			express.use(Express.static(pubpath));
+			if (app.useStaticIndex) {
+				express.use(serveIndex(pubpath));
+			}
+		}
+		
+		await app.toSetupRoutes();
 
 		express.get("*", (req, res, next) => {
 			res.set("Content-Type", "text/html");
