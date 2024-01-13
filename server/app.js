@@ -18,7 +18,7 @@ import logger from "morgan";
 import {cutil} from "@ghasemkiani/base";
 import {Textual} from "@ghasemkiani/base";
 import {App as AppBase} from "@ghasemkiani/base-app";
-import {xutil} from "@ghasemkiani/wdom";
+import {X} from "@ghasemkiani/xdom";
 
 import {Api} from "./api.js";
 
@@ -167,11 +167,12 @@ class App extends AppBase {
 		express.use(Express.json());
 		express.use(Express.urlencoded({extended: false}));
 		express.use(cookieParser());
-
+		
 		express.get("/", (req, res, next) => {
 			res.set("Content-Type", "text/html");
 			res.send(Buffer.from(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><script type="text/javascript" src="${app.uriClientScript}"></script></head><body></body></html>`));
 		});
+		
 		express.get("/api/:method", asyncHandler(async(req, rsp) => {
 				let {method} = req.params;
 				method = cutil.toCamelCase("to-do-" + method);
@@ -192,19 +193,28 @@ class App extends AppBase {
 		express.use(Express.static(pubpath));
 		express.use(serveIndex(pubpath));
 
+		express.get("*", (req, res, next) => {
+			res.set("Content-Type", "text/html");
+			res.send(Buffer.from(`<!DOCTYPE html><html><head><meta charset="UTF-8"/><script type="text/javascript" src="${app.uriClientScript}"></script></head><body></body></html>`));
+		});
+		
 		express.use((req, res, next) => {
 			next(createError(404));
 		});
 
 		express.use((err, req, res, next) => {
-			res.status(err.status || 500);
-			let text = `<h1>${xutil.escape(err.message)}</h1>`;
-			if (express.get("env") === "development") {
-				text += `<p>${xutil.escape(err.status)}</p>`;
-				text += `<pre>${xutil.escape(err.stack)}</pre>`;
-			}
-			res.send(text);
+			app.handleError(err, req, res);
 		});
+	}
+	handleError(err, req, res) {
+		res.status(err.status || 500);
+		
+		let text = `<h1>${X.escape(err.message)}</h1>`;
+		if (express.get("env") === "development") {
+			text += `<p>${X.escape(err.status)}</p>`;
+			text += `<pre>${X.escape(err.stack)}</pre>`;
+		}
+		res.send(text);
 	}
 	normalizePort(val) {
 		let port = parseInt(val, 10);

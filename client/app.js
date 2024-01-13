@@ -1,36 +1,28 @@
 import {cutil} from "@ghasemkiani/base";
 import {Obj} from "@ghasemkiani/base";
 import {pubsub} from "@ghasemkiani/base-utils";
-import {WDocument} from "@ghasemkiani/wdom";
-import {xutil} from "@ghasemkiani/wdom";
+import {X} from "@ghasemkiani/xdom";
+import {host} from "@ghasemkiani/html-maker";
+import {XHtml} from "@ghasemkiani/html-maker";
 
-class App extends cutil.mixin(Obj, pubsub) {
+class App extends cutil.mixin(Obj, pubsub, host) {
 	static {
 		cutil.extend(this.prototype, {
-			_wdocument: null,
+			name: "Untitled",
 			defaultPrefs: {},
 		});
 	}
-	get wdocument() {
-		if (!this._wdocument) {
-			this._wdocument = new WDocument();
-		}
-		return this._wdocument;
-	}
-	set wdocument(wdocument) {
-		this._wdocument = wdocument;
-	}
 	get url() {
-		return this.wdocument.window.location.href;
+		return this.window.location.href;
 	}
 	set url(url) {
-		this.wdocument.window.location.href = url;
+		this.window.location.href = url;
 	}
 	get prefs() {
-		return this.wdocument.window.localStorage.prefs || (this.wdocument.window.localStorage.prefs = this.defaultPrefs);
+		return this.window.localStorage.prefs || (this.window.localStorage.prefs = this.defaultPrefs);
 	}
 	set prefs(prefs) {
-		this.wdocument.window.localStorage.prefs = prefs;
+		this.window.localStorage.prefs = prefs;
 	}
 	async toCallApi(method, arg) {
 		let app = this;
@@ -45,22 +37,19 @@ class App extends cutil.mixin(Obj, pubsub) {
 	}
 	uriToMethodAndParams(uri) {
 		let app = this;
-		let [match, path, searchParams, hash] = /^\/([^?]*)(\?.*)?(\#.*)?$/.exec(uri);
+		let {pathname: path, search: searchParams, hash} = new URL(uri, app.url);
+		// let [match, path, searchParams, hash] = /^\/([^?]*)(\?.*)?(\#.*)?$/.exec(uri);
 		
-		let method = xutil.toCamelCase("to-go-" + (path.split("/").filter(a => !!a).join("-") || "home"));
+		let method = X.toCamelCase("to-go-" + (path.split("/").filter(a => !!a).join("-") || "home"));
 		let params;
-		try {
-			if (searchParams) {
-				params = Object.fromEntries(new URLSearchParams(searchParams).entries());
-			}
-		} catch(e) {
-			console.log(e.message);
+		if (searchParams) {
+			params = Object.fromEntries(new URLSearchParams(searchParams).entries());
 		}
 		return {method, params};
 	}
 	methodAndParamsToUri(method, params, hash = null) {
 		let app = this;
-		let uri = "/" + xutil.toDashed(method).replace(/-/g, "/").replace(/^to\/go\//, "").replace(/^home$/, "");
+		let uri = "/" + X.toDashed(method).replace(/-/g, "/").replace(/^to\/go\//, "").replace(/^home$/, "");
 		if (cutil.a(params)) {
 			uri += `?`;
 			let usp = new URLSearchParams(cutil.asObject(params));
@@ -76,12 +65,36 @@ class App extends cutil.mixin(Obj, pubsub) {
 	async toNav(uri) {
 		let app = this;
 		await app.toGo(uri);
-		app.wdocument.window.history.pushState({uri}, "", uri);
+		app.window.history.pushState({uri}, "", uri);
 	}
 	async toGo(uri) {
 		let app = this;
 		let {method, params} = app.uriToMethodAndParams(uri);
-		await app.toDoGo(method, params);
+		try {
+			await app.toDoGo(method, params);
+		} catch (e) {
+			await app.toDoGo("toShowError", {method, params});
+		}
+	}
+	async toShowError({method, params}) {
+		let app = this;
+		let {x} = app;
+		x.chain(x.root(), node => {
+			x.cl(node);
+		});
+		let xhtml = new XHtml({host: app});
+		let {nhead, nbody} = xhtml.makeDoc({title: `${app.name} | Error`});
+		x.chain(nbody, node => {
+			x.ch(node, "h1", node => {
+				x.t(node, "Error");
+			});
+			x.ch(node, "h2$method: ", node => {
+				x.t(node, method);
+			});
+			x.ch(node, "pre$params: ", node => {
+				x.t(node, JSON.stringify(params, null, 2));
+			});
+		});
 	}
 	async toDoGo(method, params) {
 		let app = this;
@@ -95,14 +108,14 @@ class App extends cutil.mixin(Obj, pubsub) {
 	}
 	async toRun() {
 		let app = this;
-		let {wdocument} = app;
-		let {window} = wdocument;
+		let {window} = app;
 		window.addEventListener("load", async (event) => {
 			await app.toCreate();
 		});
 		window.addEventListener("popstate", async (event) => {
-			await app.toGo(window.location.pathname);
+			await app.toGo(window.location.pathname + window.location.search + window.location.hash);
 		});
+		await app.toGo(window.location.pathname + window.location.search + window.location.hash);
 	}
 	async toStart() {
 		let app = this;
