@@ -73,26 +73,29 @@ class App extends cutil.mixin(Obj, pubsub, host) {
 		try {
 			await app.toDoGo(method, params);
 		} catch (e) {
-			await app.toDoGo("toShowError", {method, params});
+			await app.toDoGo("toShowError", {method, params, e});
 		}
 	}
-	async toShowError({method, params}) {
+	async toShowError({method, params, e}) {
 		let app = this;
 		let {x} = app;
-		x.chain(x.root(), node => {
-			x.cl(node);
-		});
 		let xhtml = new XHtml({host: app});
-		let {nhead, nbody} = xhtml.makeDoc({title: `${app.name} | Error`});
+		let {nbody} = xhtml.makeDoc({title: `${app.name} | Error`});
 		x.chain(nbody, node => {
+			x.cl(node);
 			x.ch(node, "h1", node => {
 				x.t(node, "Error");
 			});
-			x.ch(node, "h2$method: ", node => {
+			x.ch(node, "h2", node => {
+				x.t(node, "method: ");
 				x.t(node, method);
-			});
-			x.ch(node, "pre$params: ", node => {
+				x.ch(node, "br");
+				x.t(node, "params:");
+				x.ch(node, "br");
 				x.t(node, JSON.stringify(params, null, 2));
+			});
+			x.ch(node, "pre$message: ", node => {
+				x.t(node, e.message);
 			});
 		});
 	}
