@@ -292,6 +292,7 @@ class App extends cutil.mixin(AppBase, dumper) {
 		app.commander.option("--set-key <key>", "Set key file persistently");
 		app.commander.option("-n, --nosec <nosec>", "Set nosec port");
 		app.commander.option("--set-nosec <nosec>", "Set nosec port persistently");
+		app.commander.command("run");
 		app.commander.command("build")
 			.description("Build the client script")
 			.option("-o, --obfuscate", "Obfuscate the client script")
