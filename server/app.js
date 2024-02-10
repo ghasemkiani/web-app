@@ -53,6 +53,12 @@ class App extends cutil.mixin(AppBase, dumper) {
 			_dirBase: null,
 		});
 	}
+	get prefsId() {
+		return this.name;
+	}
+	set prefsId(prefsId) {
+		this.name = prefsId;
+	}
 	get dirBase() {
 		if (cutil.na(this._dirBase)) {
 			this._dirBase = path.dirname(url.fileURLToPath(this.urlBase));
