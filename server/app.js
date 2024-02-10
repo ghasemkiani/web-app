@@ -18,11 +18,12 @@ import logger from "morgan";
 import {cutil} from "@ghasemkiani/base";
 import {Textual} from "@ghasemkiani/base";
 import {App as AppBase} from "@ghasemkiani/base-app";
+import {dumper} from "@ghasemkiani/base-app";
 import {X} from "@ghasemkiani/xdom";
 
 import {Api} from "./api.js";
 
-class App extends AppBase {
+class App extends cutil.mixin(AppBase, dumper) {
 	static {
 		cutil.extend(this.prototype, {
 			name: "Untitled",
@@ -280,6 +281,7 @@ class App extends AppBase {
 	async toDefineInitOptions() {
 		await super.toDefineInitOptions();
 		let app = this;
+		await app.toDefineInitOptionsDumper();
 		app.commander.option("-p, --port <port>", "Set the port");
 		app.commander.option("--set-port <port>", "Set the port persistently");
 		app.commander.option("-s, --secure", "Use HTTPS protocol");
@@ -310,6 +312,7 @@ class App extends AppBase {
 	async toApplyInitOptions() {
 		await super.toApplyInitOptions();
 		let app = this;
+		await app.toApplyInitOptionsDumper();
 		let {port, setPort, secure, setSecure, cert, setCert, key, setKey, nosec, setNosec} = app.commander.opts();
 		if (cutil.a(port)) {
 			app.port = port;
