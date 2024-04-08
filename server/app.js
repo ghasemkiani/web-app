@@ -291,7 +291,7 @@ class App extends cutil.mixin(AppBase, dumper) {
 		app.commander.option("-p, --port <port>", "Set the port");
 		app.commander.option("--set-port <port>", "Set the port persistently");
 		app.commander.option("-s, --secure", "Use HTTPS protocol");
-		app.commander.option("--set-secure", "Use HTTPS protocol persistently");
+		app.commander.option("--set-secure [false]", "Use HTTPS protocol persistently");
 		app.commander.option("-c, --cert <cert>", "Set cert file");
 		app.commander.option("--set-cert <cert>", "Set cert file persistently");
 		app.commander.option("-k, --key <key>", "Set key file");
@@ -331,7 +331,7 @@ class App extends cutil.mixin(AppBase, dumper) {
             app.secure = secure;
         }
         if (cutil.a(setSecure)) {
-            app.prefs.secure = setSecure;
+            app.prefs.secure = !/^\s*(false|no)\s*$/i.test(setSecure);
         }
         if (cutil.a(cert)) {
             app.cert = cert;
