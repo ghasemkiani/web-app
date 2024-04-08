@@ -10,6 +10,7 @@ class App extends cutil.mixin(Obj, pubsub, host) {
 		cutil.extend(this.prototype, {
 			name: "Untitled",
 			defaultPrefs: {},
+			_prefs: null,
 		});
 	}
 	get url() {
@@ -19,10 +20,20 @@ class App extends cutil.mixin(Obj, pubsub, host) {
 		this.window.location.href = url;
 	}
 	get prefs() {
-		return this.window.localStorage.prefs || (this.window.localStorage.prefs = this.defaultPrefs);
+		if (cutil.na(this._prefs)) {
+			this._prefs = this.loadPrefs();
+		}
+		return this._prefs;
 	}
 	set prefs(prefs) {
-		this.window.localStorage.prefs = prefs;
+		this._prefs = prefs;
+		this.storePrefs(this._prefs);
+	}
+	loadPrefs() {
+		return JSON.parse(this.window.localStorage.prefs || JSON.stringify(this.defaultPrefs));
+	}
+	storePrefs(prefs) {
+		this.window.localStorage.prefs = JSON.stringify(prefs);
 	}
 	async toCallApi(method, arg) {
 		let app = this;
@@ -62,7 +73,11 @@ class App extends cutil.mixin(Obj, pubsub, host) {
 		}
 		return uri;
 	}
-	async toNav(uri) {
+	async toNav(method, params, hash = null) {
+		let app = this;
+		await app.toNavTo(app.methodAndParamsToUri(method, params, hash));
+	}
+	async toNavTo(uri) {
 		let app = this;
 		await app.toGo(uri);
 		app.window.history.pushState({uri}, "", uri);
