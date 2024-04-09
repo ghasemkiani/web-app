@@ -278,7 +278,10 @@ class App extends cutil.mixin(AppBase, dumper) {
 		if (!secure) {
 			start(app.httpServer = http.createServer(express), port);
 		} else {
-			start(app.httpsServer = https.createServer({key, cert}, express), port);
+			start(app.httpsServer = https.createServer({
+				key: fs.readFileSync(key),
+				cert: fs.readFileSync(cert),
+			}, express), port);
 			if (cutil.a(nosec)) {
 				start(app.httpServer = http.createServer(express), nosec);
 			}
