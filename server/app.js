@@ -291,7 +291,7 @@ class App extends cutil.mixin(AppBase, dumper) {
 		app.commander.option("-p, --port <port>", "Set the port");
 		app.commander.option("--set-port <port>", "Set the port persistently");
 		app.commander.option("-s, --secure", "Use HTTPS protocol");
-		app.commander.option("--set-secure [false]", "Use HTTPS protocol persistently");
+		app.commander.option("--set-secure <secure>", "Use HTTPS protocol persistently");
 		app.commander.option("-c, --cert <cert>", "Set cert file");
 		app.commander.option("--set-cert <cert>", "Set cert file persistently");
 		app.commander.option("-k, --key <key>", "Set key file");
@@ -299,6 +299,13 @@ class App extends cutil.mixin(AppBase, dumper) {
 		app.commander.option("-n, --nosec <nosec>", "Set nosec port");
 		app.commander.option("--set-nosec <nosec>", "Set nosec port persistently");
 		app.commander.command("run");
+		app.commander.command("info")
+			.description("Show app info")
+			.action(async () => {
+				app.sub("run", async () => {
+					await app.toShowInfo();
+				})
+			});
 		app.commander.command("build")
 			.description("Build the client script")
 			.option("-o, --obfuscate", "Obfuscate the client script")
@@ -351,6 +358,14 @@ class App extends cutil.mixin(AppBase, dumper) {
         if (cutil.a(setNosec)) {
             app.prefs.nosec = setNosec;
         }
+	}
+	async toShowInfo() {
+		let app = this;
+		console.log(`app.port: ${app.port}`);
+		console.log(`app.secure: ${app.secure}`);
+		console.log(`app.nosec: ${app.nosec}`);
+		console.log(`app.cert: ${app.cert}`);
+		console.log(`app.key: ${app.key}`);
 	}
 	async toOperate() {
 		let app = this;
