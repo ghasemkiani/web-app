@@ -51,6 +51,7 @@ class App extends cutil.mixin(AppBase, dumper) {
 			uriClientRun: "./client/run.js",
 			urlBase: null,
 			_dirBase: null,
+			_buildExternals: null,
 		});
 	}
 	get prefsId() {
@@ -67,6 +68,15 @@ class App extends cutil.mixin(AppBase, dumper) {
 	}
 	set dirBase(dirBase) {
 		this._dirBase = dirBase;
+	}
+	get buildExternals() {
+		if (cutil.na(this._buildExternals)) {
+			this._buildExternals = [];
+		}
+		return this._buildExternals;
+	}
+	set buildExternals(buildExternals) {
+		this._buildExternals = buildExternals;
 	}
 	get port() {
 		if (cutil.na(this._port)) {
@@ -137,6 +147,7 @@ class App extends cutil.mixin(AppBase, dumper) {
 		let {dirBase} = app;
 		let {uriClientRun} = app;
 		let {uriClientScript} = app;
+		let {buildExternals} = app;
 
 		let fnClientRun = path.join(dirBase, uriClientRun);
 		let fnClientScript = path.join(dirBase, "public", uriClientScript);
@@ -150,6 +161,7 @@ class App extends cutil.mixin(AppBase, dumper) {
 			plugins: [
 				polyfillNode({}),
 			],
+			external: buildExternals,
 		});
 		if (obfuscate) {
 			if (verbose) {
