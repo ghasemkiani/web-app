@@ -1,3 +1,2 @@
-export * as server from "./server/app.js";
-export * as client from "./client/app.js";
-export * from "./client/view.js";
+export * as server from "./server/index.js";
+export * as client from "./client/index.js";
