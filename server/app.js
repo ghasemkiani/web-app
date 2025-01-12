@@ -200,7 +200,7 @@ class App extends cutil.mixin(AppBase, dumper) {
 		express.get("/api/:method", asyncHandler(async(req, rsp) => {
 				let {method} = req.params;
 				method = cutil.toCamelCase("to-do-" + method);
-				let arg = {...req.query};
+				let arg = {req, rsp, ...req.query};
 				let api = req.app.get("api");
 				rsp.set("Content-Type", "application/json");
 				let res;
