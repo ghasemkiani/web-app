@@ -187,6 +187,8 @@ class App extends cutil.mixin(AppBase, dumper) {
 		await api.toInit();
 		express.set("api", api);
 
+    express.disable("x-powered-by");
+    
 		express.use(logger("dev"));
 		express.use(Express.json());
 		express.use(Express.urlencoded({extended: false}));
