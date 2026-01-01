@@ -1,32 +1,32 @@
 {
-	"name": "@ghasemkiani/web-app",
-	"version": "1.5.8",
-	"description": "",
-	"type": "module",
-	"main": "index.js",
-	"scripts": {
-		"test": "node --test"
-	},
-	"keywords": [],
-	"author": "Ghasem Kiani",
-	"license": "MIT",
-	"dependencies": {
-		"@ghasemkiani/base": "github:ghasemkiani/base",
-		"@ghasemkiani/base-app": "github:ghasemkiani/base-app",
-		"@ghasemkiani/base-utils": "github:ghasemkiani/base-utils",
-		"@ghasemkiani/html-maker": "github:ghasemkiani/html-maker",
-		"@ghasemkiani/xdom": "github:ghasemkiani/xdom",
-		"cookie-parser": "^1.4.6",
-		"debug": "^4.3.4",
-		"express": "^4.18.2",
-		"express-async-handler": "^1.2.0",
-		"http-errors": "^2.0.0",
-		"morgan": "^1.10.0",
-		"serve-index": "^1.9.1"
-	},
-	"devDependencies": {
-		"esbuild": "^0.19.8",
-		"esbuild-plugin-polyfill-node": "^0.3.0",
-		"javascript-obfuscator": "^4.1.0"
-	}
+  "name": "@ghasemkiani/web-app",
+  "version": "1.5.9",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [],
+  "author": "Ghasem Kiani",
+  "license": "MIT",
+  "dependencies": {
+    "@ghasemkiani/base": "github:ghasemkiani/base",
+    "@ghasemkiani/base-app": "github:ghasemkiani/base-app",
+    "@ghasemkiani/base-utils": "github:ghasemkiani/base-utils",
+    "@ghasemkiani/html-maker": "github:ghasemkiani/html-maker",
+    "@ghasemkiani/xdom": "github:ghasemkiani/xdom",
+    "cookie-parser": "^1.4.6",
+    "debug": "^4.3.4",
+    "express": "^4.18.2",
+    "express-async-handler": "^1.2.0",
+    "http-errors": "^2.0.0",
+    "morgan": "^1.10.0",
+    "serve-index": "^1.9.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.8",
+    "esbuild-plugin-polyfill-node": "^0.3.0",
+    "javascript-obfuscator": "^4.1.0"
+  }
 }
