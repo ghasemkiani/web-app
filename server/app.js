@@ -19,16 +19,19 @@ import { cutil } from "@ghasemkiani/base";
 import { Textual } from "@ghasemkiani/base";
 import { App as AppBase } from "@ghasemkiani/base-app";
 import { dumper } from "@ghasemkiani/base-app";
+import { infoer } from "@ghasemkiani/base-app";
 import { X } from "@ghasemkiani/xdom";
 
 import { Api } from "./api.js";
 
-class App extends cutil.mixin(AppBase, dumper) {
+class App extends cutil.mixin(AppBase, dumper, infoer) {
   static {
     cutil.extend(this.prototype, {
       name: "Untitled",
       Api,
       defaultPrefs: {
+        ...dumper.defaultPrefsDumper,
+        ...infoer.defaultPrefsInfoer,
         port: null,
         secure: false,
         nosec: false,
@@ -319,6 +322,7 @@ class App extends cutil.mixin(AppBase, dumper) {
     await super.toDefineInitOptions();
     let app = this;
     await app.toDefineInitOptionsDumper();
+    await app.toDefineInitOptionsInfoer();
     app.commander.option("-p, --port <port>", "Set the port");
     app.commander.option("--set-port <port>", "Set the port persistently");
     app.commander.option("-s, --secure", "Use HTTPS protocol");
@@ -364,6 +368,7 @@ class App extends cutil.mixin(AppBase, dumper) {
     await super.toApplyInitOptions();
     let app = this;
     await app.toApplyInitOptionsDumper();
+    await app.toApplyInitOptionsInfoer();
     let {
       port,
       setPort,
@@ -409,6 +414,7 @@ class App extends cutil.mixin(AppBase, dumper) {
   }
   async toShowInfo() {
     let app = this;
+    await app.toShowInfoInfoer();
     console.log(`app.port: ${app.port}`);
     console.log(`app.secure: ${app.secure}`);
     console.log(`app.nosec: ${app.nosec}`);
