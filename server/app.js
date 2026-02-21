@@ -177,6 +177,7 @@ class App extends cutil.mixin(AppBase, dumper, infoer) {
       textual.write();
     }
   }
+  async toSetupRoutes0() {}
   async toSetupRoutes() {}
   async toSetup() {
     let app = this;
@@ -192,6 +193,8 @@ class App extends cutil.mixin(AppBase, dumper, infoer) {
     express.use(Express.json());
     express.use(Express.urlencoded({ extended: false }));
     express.use(cookieParser());
+    
+    await app.toSetupRoutes0();
 
     express.get("/", (req, res, next) => {
       res.set("Content-Type", "text/html");
