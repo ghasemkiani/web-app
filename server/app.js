@@ -20,18 +20,23 @@ import { Textual } from "@ghasemkiani/base";
 import { App as AppBase } from "@ghasemkiani/base-app";
 import { dumper } from "@ghasemkiani/base-app";
 import { infoer } from "@ghasemkiani/base-app";
+import { indever } from "@ghasemkiani/base-app";
+import { signer } from "@ghasemkiani/base-app";
 import { X } from "@ghasemkiani/xdom";
 
 import { Api } from "./api.js";
 
-class App extends cutil.mixin(AppBase, dumper, infoer) {
+class App extends cutil.mixin(AppBase, dumper, infoer, indever, signer) {
   static {
     cutil.extend(this.prototype, {
       name: "Untitled",
       Api,
       defaultPrefs: {
+        ...AppBase.prototype.defaultPrefs,
         ...dumper.defaultPrefsDumper,
         ...infoer.defaultPrefsInfoer,
+        ...indever.defaultPrefsIndever,
+        ...signer.defaultPrefsSigner,
         port: null,
         secure: false,
         nosec: false,
@@ -184,15 +189,16 @@ class App extends cutil.mixin(AppBase, dumper, infoer) {
     let { express } = app;
     let { dirBase } = app;
     let { api } = app;
+    let { signingKey } = app;
     await api.toInit();
-    express.set("api", api);
+    // express.set("api", api);
 
     express.disable("x-powered-by");
 
     express.use(logger("dev"));
     express.use(Express.json());
     express.use(Express.urlencoded({ extended: false }));
-    express.use(cookieParser());
+    express.use(cookieParser(signingKey));
     
     await app.toSetupRoutes0();
 
@@ -207,20 +213,18 @@ class App extends cutil.mixin(AppBase, dumper, infoer) {
 
     express.get(
       "/api/:method",
-      asyncHandler(async (req, rsp) => {
+      asyncHandler(async (req, res) => {
         let { method } = req.params;
         method = cutil.toCamelCase("to-do-" + method);
-        let arg = { req, rsp, ...req.query };
-        let api = req.app.get("api");
-        rsp.set("Content-Type", "application/json");
-        let res;
+        res.set("Content-Type", "application/json");
+        let rslt;
         try {
-          let result = await api[method](arg);
-          res = { success: true, result };
+          let result = await api[method]({ ...req.query }, req, res);
+          rslt = { success: true, result };
         } catch (e) {
-          res = { success: false, error: e.message };
+          rslt = { success: false, error: e.message };
         }
-        rsp.send(res);
+        res.send(rslt);
       }),
     );
 
@@ -326,6 +330,8 @@ class App extends cutil.mixin(AppBase, dumper, infoer) {
     let app = this;
     await app.toDefineInitOptionsDumper();
     await app.toDefineInitOptionsInfoer();
+    await app.toDefineInitOptionsIndever();
+    await app.toDefineInitOptionsSigner();
     app.commander.option("-p, --port <port>", "Set the port");
     app.commander.option("--set-port <port>", "Set the port persistently");
     app.commander.option("-s, --secure", "Use HTTPS protocol");
@@ -372,6 +378,8 @@ class App extends cutil.mixin(AppBase, dumper, infoer) {
     let app = this;
     await app.toApplyInitOptionsDumper();
     await app.toApplyInitOptionsInfoer();
+    await app.toApplyInitOptionsIndever();
+    await app.toApplyInitOptionsSigner();
     let {
       port,
       setPort,
@@ -418,6 +426,7 @@ class App extends cutil.mixin(AppBase, dumper, infoer) {
   async toShowInfo() {
     let app = this;
     await app.toShowInfoInfoer();
+    await app.toShowInfoIndever();
     console.log(`app.port: ${app.port}`);
     console.log(`app.secure: ${app.secure}`);
     console.log(`app.nosec: ${app.nosec}`);

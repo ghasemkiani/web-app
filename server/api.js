@@ -8,6 +8,9 @@ class Api extends Obj {
     });
   }
   async toInit() {}
+  async toDoEcho(arg) {
+    return arg;
+  }
 }
 
 export { Api };
