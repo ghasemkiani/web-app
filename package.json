@@ -1,6 +1,6 @@
 {
   "name": "@ghasemkiani/web-app",
-  "version": "1.5.12",
+  "version": "1.6.0",
   "description": "",
   "type": "module",
   "main": "index.js",
@@ -16,17 +16,17 @@
     "@ghasemkiani/base-utils": "github:ghasemkiani/base-utils",
     "@ghasemkiani/html-maker": "github:ghasemkiani/html-maker",
     "@ghasemkiani/xdom": "github:ghasemkiani/xdom",
-    "cookie-parser": "^1.4.6",
-    "debug": "^4.3.4",
-    "express": "^4.18.2",
+    "cookie-parser": "^1.4.7",
+    "debug": "^4.4.3",
+    "express": "^5.2.1",
     "express-async-handler": "^1.2.0",
-    "http-errors": "^2.0.0",
-    "morgan": "^1.10.0",
-    "serve-index": "^1.9.1"
+    "http-errors": "^2.0.1",
+    "morgan": "^1.10.1",
+    "serve-index": "^1.9.2"
   },
   "devDependencies": {
-    "esbuild": "^0.19.8",
+    "esbuild": "^0.28.0",
     "esbuild-plugin-polyfill-node": "^0.3.0",
-    "javascript-obfuscator": "^4.1.0"
+    "javascript-obfuscator": "^5.4.2"
   }
 }
