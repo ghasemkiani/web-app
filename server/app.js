@@ -238,7 +238,7 @@ class App extends cutil.mixin(AppBase, dumper, infoer, indever, signer) {
 
     await app.toSetupRoutes();
 
-    express.get("*", (req, res, next) => {
+    express.get("{*any}", (req, res, next) => {
       res.set("Content-Type", "text/html");
       res.send(
         Buffer.from(
