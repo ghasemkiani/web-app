@@ -256,6 +256,8 @@ class App extends cutil.mixin(AppBase, dumper, infoer, indever, signer) {
     });
   }
   handleError(err, req, res) {
+    let app = this;
+    let { express } = app;
     res.status(err.status || 500);
 
     let text = `<h1>${X.escape(err.message)}</h1>`;
