@@ -219,7 +219,9 @@ class App extends cutil.mixin(AppBase, dumper, infoer, indever, signer) {
         res.set("Content-Type", "application/json");
         let rslt;
         try {
-          let result = await api[method]({ ...req.query }, req, res);
+          // const args = { ...req.query };
+          const args = Object.fromEntries(Object.entries({ ...req.query }).map(([k, v]) => [cutil.toCamelCase(k), v]));
+          let result = await api[method](args, req, res);
           rslt = { success: true, result };
         } catch (e) {
           rslt = { success: false, error: e.message };
