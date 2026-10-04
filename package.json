@@ -1,6 +1,6 @@
 {
   "name": "@ghasemkiani/web-app",
-  "version": "1.10.5",
+  "version": "1.10.6",
   "description": "",
   "type": "module",
   "main": "index.js",
@@ -14,7 +14,7 @@
     "@ghasemkiani/base": "github:ghasemkiani/base",
     "@ghasemkiani/base-app": "github:ghasemkiani/base-app",
     "@ghasemkiani/base-utils": "github:ghasemkiani/base-utils",
-    "@ghasemkiani/html-maker": "github:ghasemkiani/html-maker",
+    "@ghasemkiani/dom": "github:ghasemkiani/dom",
     "@ghasemkiani/xdom": "github:ghasemkiani/xdom",
     "cookie-parser": "^1.4.7",
     "debug": "^4.4.3",

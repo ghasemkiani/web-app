@@ -2,10 +2,10 @@ import { cutil } from "@ghasemkiani/base";
 import { Obj } from "@ghasemkiani/base";
 import { pubsub } from "@ghasemkiani/base-utils";
 import { X } from "@ghasemkiani/xdom";
-import { host } from "@ghasemkiani/html-maker";
-import { XHtml } from "@ghasemkiani/html-maker";
+import { iwx } from "@ghasemkiani/xdom";
+import { iwdom } from "@ghasemkiani/dom";
 
-class App extends cutil.mixin(Obj, pubsub, host) {
+class App extends cutil.mixin(Obj, pubsub, iwdom, iwx) {
   static {
     cutil.extend(this.prototype, {
       name: "Untitled",
@@ -107,9 +107,15 @@ class App extends cutil.mixin(Obj, pubsub, host) {
   async toShowError({ method, params, e }) {
     let app = this;
     let { x } = app;
-    let xhtml = new XHtml({ host: app });
-    let { nbody } = xhtml.makeDoc({ title: `${app.name} | Error` });
-    x.chain(nbody, (node) => {
+    x.chain(x.q(x.doc(), "head") || x.ch(x.root(), "head"), (node) => {
+      const title = `${app.name} | Error`;
+      const ntitle = x.q(node, "title") || x.ch(node, "title");
+      x.chain(ntitle, (node) => {
+        x.cl(node);
+        x.t(node, title);
+      });
+    });
+    x.chain(x.q(document, "body") || x.ch(x.root(), "body"), node => {
       x.cl(node);
       x.ch(node, "h1", (node) => {
         x.t(node, "Error");
